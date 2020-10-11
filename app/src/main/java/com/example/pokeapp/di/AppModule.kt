@@ -32,29 +32,6 @@ import javax.inject.Singleton
 @InstallIn(ApplicationComponent::class)
 class AppModule {
 
-    @Singleton
-    @Provides
-    fun provideDatabase(@ApplicationContext context: Context) = AppDatabase.getDatabase(context)
-
-    @Provides
-    fun providePokemonDao(db: AppDatabase) = db.pokemonDao()
-
-    @Provides
-    fun providePokemonDataSource(pokemonDao: PokemonDao):  DataSource.Factory<Int, Pokemon> = pokemonDao.dataSource()
-
-    val BASE_URL = "https://pokeapi.co/api/v2/"
-
-    @Singleton
-    @Provides
-    fun provideRetrofit() : Retrofit = Retrofit.Builder()
-        .baseUrl(BASE_URL)
-        .addConverterFactory(GsonConverterFactory.create())
-        .build()
-
-    @Singleton
-    @Provides
-    fun providePokemonsService(retrofit: Retrofit): PokemonService = retrofit.create(PokemonService::class.java)
-
     @Provides
     fun providePageListConfig(): PagedList.Config = PagedList.Config.Builder()
         .setPageSize(10)
@@ -70,20 +47,4 @@ class AppModule {
 
     @Provides
     fun provideRepository(pokemonDao: PokemonDao, pokemonService: PokemonService) = PokemonsRepository(pokemonService, pokemonDao)
-}
-
-@Module
-@InstallIn(ActivityComponent::class)
-object ActivitiesModule {
-    @Provides
-    @ActivityScoped
-    fun provideListener(@ActivityContext context: Context): PokemonListener = context as MainActivity
-
-    @ActivityScoped
-    @Provides
-    fun provideMainPresenter(pokemonDataSource: DataSource.Factory<Int, Pokemon>,
-                             pagedListConfig: PagedList.Config,
-                             fetchPokemonsUseCase: FetchPokemonsUseCase,
-                             clearPokemonTableUseCase: ClearPokemonTableUseCase):
-            MainContract.Presenter = MainPresenter(pokemonDataSource, pagedListConfig, fetchPokemonsUseCase, clearPokemonTableUseCase)
 }
